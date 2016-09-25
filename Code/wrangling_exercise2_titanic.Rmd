@@ -1,0 +1,64 @@
+---
+title: "SpringBoard Traning - Data Warngling Exercise 2 - Titanic Data Set"
+author: "Naga"
+date: "25 September 2016"
+output: html_document
+---
+
+####Load the required libraries
+```{r}
+library("dplyr")
+library("tidyr")
+
+
+```
+
+####Load the original data set and convert to dply tbl_df data frame
+
+```{r}
+
+titanic <- read.csv("D:/Work/Data Science Projects/SpringBoardTraining/Data Wrangling Exercise 2 Dealing with missing values/4. Analysis/R_Scripts/Data/titanic_original.csv", header = TRUE, sep = ",", quote = "\"",blank.lines.skip = TRUE, strip.white = TRUE,na.strings=c("NA","NaN", ""), stringsAsFactors = FALSE, skipNul = TRUE)
+
+titanic <- tbl_df(titanic)
+head(titanic)
+
+```
+####removing rows with all columns NA
+```{r}
+titanic <- titanic[!(rowSums(is.na(titanic)) == length(colnames(titanic))),]
+```
+
+
+####check for NA in Embarked column and replace with S
+```{r}
+dplyr::filter(titanic, is.na(embarked))
+titanic$embarked[is.na(titanic$embarked)] <- 'S'
+dplyr::filter(titanic, is.na(embarked))
+```
+
+####Check missing values in Age column and replace with mean
+Could use Median/Mea to replace missing values (https://www.youtube.com/watch?v=2PrgB_O1T0U)
+in this case, mean(29.8813) and median(28) are close enough, hence using mean
+```{r}
+dplyr::filter(titanic, is.na(age))
+titanic$age[is.na(titanic$age)] <- mean(titanic$age, na.rm = TRUE)
+dplyr::filter(titanic, is.na(age))
+```
+
+####check for NA in boat column and replace with "None"
+```{r}
+dplyr::filter(titanic, is.na(boat))
+titanic$boat[is.na(titanic$boat)] <- 'None'
+dplyr::filter(titanic, is.na(boat))
+```
+
+####unsure of filling in missing cabin number hence creating binary column for cabin number
+```{r}
+titanic <- titanic %>% rowwise() %>% mutate(has_cabin_number = ifelse(is.na(cabin),0,1))
+```
+
+####write the clean file to titanic_clean.csv
+```{r}
+write.csv(titanic, "D:/Work/Data Science Projects/SpringBoardTraining/Data Wrangling Exercise 2 Dealing with missing values/4. Analysis/R_Scripts/Data/titanic_clean.csv", quote = TRUE, row.names = FALSE)
+```
+
